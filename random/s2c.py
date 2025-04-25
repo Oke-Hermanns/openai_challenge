@@ -3,8 +3,7 @@ import pyaudio
 import wave
 import os
 
-openai.api_key = ("sk-proj-Gp2IHNfvHXgUW3ImLVVY296-XKHzZWggCOta_z3WcV7tfMashaqZ8YyU8SbgeoVLTrASylrJ"
-                  "irT3BlbkFJdLwl79HnERH3EuxZRwwzlRvugXc7eRYoBLKxu9xgeGhmAjLIDm6pdtj5h_hPr_Eel-w6TxvegA")
+openai.api_key = (" ")
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
