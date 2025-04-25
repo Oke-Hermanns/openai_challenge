@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blink Keyboard</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .message-box {
+            margin-bottom: 20px;
+            font-size: 24px;
+            padding: 10px;
+            background: white;
+            border: 2px solid #ccc;
+            width: 60%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(6, 60px);
+            grid-gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .letter {
+            background: white;
+            border: 2px solid #aaa;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .letter:hover {
+            background-color: #dceaff;
+        }
+
+        .video-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: auto;
+            border: 2px solid #444;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        video, img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="message-box" id="messageBox">Message will appear here...</div>
+
+    <div class="grid">
+        {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' %}
+            <div class="letter">{{ letter }}</div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="video-box">
+    <img src="{{ url_for('video_feed') }}" alt="Webcam Feed">
+</div>
+
+</body>
+</html>
