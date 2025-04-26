@@ -116,6 +116,7 @@
     <div class="word special-word" id="cell-extra-keyboard">keyboard</div>
     <div class="word special-word" id="cell-extra-reset">reset</div>
     <div class="word special-word" id="cell-extra-submit">submit</div>
+    <div class="word special-word" id="extra-button">extra button</div>
 </div>
 <!--
 <div style="text-align: center;">
@@ -127,26 +128,52 @@
 </div>
 
 <script>
-    const wordElements = document.querySelectorAll('.word');
-    const numWords = wordElements.length;
+    const numCols = 4;
+    const numRows = 4;
+    const wordElements = [...document.querySelectorAll('.word')];
+    let mode = 'row';
+    let selectedRow = 0;
     let currentHighlight = 0;
+    let col = 0;
 
-    function highlightWord(index) {
+    function highlightRow(rowIndex) {
         wordElements.forEach((word, i) => {
-            word.classList.remove('highlight', 'special-highlight');
-            if (i === index) {
+            const row = Math.floor(i / numCols);
+            word.classList.toggle('highlight', row === rowIndex);
+            word.classList.remove('special-highlight');
+        });
+    }
+
+    function highlightWordInRow(rowIndex, colIndex) {
+        wordElements.forEach((word, i) => {
+            const row = Math.floor(i / numCols);
+            const column = i % numCols;
+            word.classList.remove('highlight');
+            if (row === rowIndex && column === colIndex) {
                 if (word.classList.contains('special-word')) {
                     word.classList.add('special-highlight');
                 } else {
                     word.classList.add('highlight');
                 }
+            } else {
+                word.classList.remove('special-highlight');
             }
         });
     }
 
+    function getHighlightedWord(rowIndex, colIndex) {
+        const index = rowIndex * numCols + colIndex;
+        return wordElements[index] || null;
+    }
+
     setInterval(() => {
-        highlightWord(currentHighlight);
-        currentHighlight = (currentHighlight + 1) % numWords;
+        if (mode === 'row') {
+            highlightRow(currentHighlight);
+            currentHighlight = (currentHighlight + 1) % numRows;
+        } else if (mode === 'word') {
+            highlightWordInRow(selectedRow, col);
+            col = (col + 1) % numCols;
+        }
     }, 1000);
 
     async function checkBlink() {
@@ -155,14 +182,25 @@
             const result = await response.json();
 
             if (result.blink) {
-                const selectedWord = currentHighlight === 0 ? 0 : (currentHighlight - 1 + numWords) % numWords;
-
+                if (mode === 'row') {
+                    selectedRow = (currentHighlight + numRows - 1) % numRows;
+                    currentHighlight = 0;
+                    col = 0;
+                    mode = 'word';
+                } else if (mode === 'word') {
+                    const selectedWord = getHighlightedWord(selectedRow, (col + numCols - 1) % numCols);
+                    if (selectedWord) {
+                        selectedWord.classList.add('blink-selected');
+                        setTimeout(() => {
+                            selectedWord.classList.remove('blink-selected');
+                        }, 1000);
+                const selectedIndex = selectedRow * numCols + ((col + numCols - 1) % numCols);
                 fetch('/select_word', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: `word=${selectedWord}`
+                    body: `word=${selectedIndex}`
                 })
                 .then(response => response.json())  // <-- use .json() not .text()
                 .then(data => {
@@ -174,8 +212,12 @@
                     }
                 })
                 .catch(error => console.error('Error selecting word:', error));
+                        
+                    }
+                    mode = 'row';
+                    currentHighlight = 0;
+                }
             }
-
         } catch (err) {
             console.error('Blink check failed', err);
         }

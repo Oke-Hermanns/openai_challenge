@@ -2,13 +2,20 @@ from openai import OpenAI
 import input_data
 client = OpenAI()
 
+messages = []
+
 def create_response(input_text, temperature=0.2, model="gpt-4.1"):
-    response = client.responses.create(
+    messages.append({"role": "user", "content": input_text})
+    response = client.chat.completions.create(
         model=model,
-        input=input_text,
+        messages=messages,
         temperature=temperature
     )
-    return response.output_text
+    chatgpt_reply = response.choices[0].message.content
+    messages.append({"role": "assistant", "content": chatgpt_reply})
+
+    return chatgpt_reply
+
 
 def choose_word(words):
     print(words)
@@ -20,11 +27,11 @@ def choose_word(words):
 
 def choose_promt(input_dict, last_word):
     if last_word == "":
-        return input_dict["base_information"]
+        return input_dict["general_information"]
     elif last_word == "end":
         return None
     else:
-        return input_dict["base_information"] # use other promt here, when history is stored
+        return input_dict["nxt"]
 
 def make_promt():
     input_dict = input_data.get_input_dict()
@@ -32,7 +39,6 @@ def make_promt():
     response = choose_promt(input_dict, last_word)
     if response is None:
         return True
-
     answer = create_response(response)
     words = answer.split()
     return words

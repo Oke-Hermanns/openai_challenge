@@ -115,7 +115,7 @@ def select_word():
     user_sentence = input_data.user_sentence
     word_index = int(request.form.get('word', ''))
 
-    if word_index == 13:
+    if word_index == 12:
         # Tell frontend to go to index
         return jsonify({'redirect': url_for('index')})
 
