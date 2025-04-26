@@ -2,7 +2,11 @@ import os
 import cv2
 import time
 import mediapipe as mp
+import random
 from flask import Flask, render_template, Response, jsonify, request, redirect, url_for
+import openai
+from openai import OpenAI
+
 import input_data
 from gpt_connection import make_promt
   # put camera here
@@ -141,7 +145,24 @@ def select_word():
 
 @app.route('/final', methods=['GET', 'POST'])
 def final():
-    return render_template('final.html', final_sentence=input_data.user_sentence)
+    final_text = input_data.user_sentence
+
+    # Generate speech
+    client = OpenAI()
+    response = client.audio.speech.create(
+        model="tts-1",
+        voice="ash",
+        input=final_text
+    )
+
+    os.makedirs('static', exist_ok=True)
+    audio_path = "static/final.mp3"
+    with open(audio_path, "wb") as f:
+        f.write(response.content)
+
+    # Pass a random number to template to bust cache
+    cache_buster = random.randint(1, 1000000)
+    return render_template('final.html', final_sentence=final_text, cache_buster=cache_buster)
 
 @app.route('/sos', methods=['GET', 'POST'])
 def sos():
