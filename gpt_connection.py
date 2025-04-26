@@ -1,20 +1,14 @@
+from openai import OpenAI
 import input_data
-import requests
+client = OpenAI()
 
-api_key = "Insert api key here"
-
-
-url = "https://api.openai.com/v1/responses"
-
-headers = {
-    "Content-Type": "application/json",
-    "Authorization": f"Bearer {api_key}",
-    "temperature": '0.2'
-}
-
-data = {
-    "model": "gpt-4.1"
-}
+def create_response(input_text, temperature=0.2, model="gpt-4.1"):
+    response = client.responses.create(
+        model=model,
+        input=input_text,
+        temperature=temperature
+    )
+    return response.output_text
 
 def choose_word(words):
     print(words)
@@ -25,24 +19,22 @@ def choose_word(words):
 
 
 def choose_promt(input_dict, last_word):
-    if input_data.last_word == "":
-        data["input"] = input_dict["base_information"]
-    elif input_data.last_word == "end":
-        return True
+    if last_word == "":
+        return input_dict["base_information"]
+    elif last_word == "end":
+        return None
     else:
-        data["input"] = input_dict["base_information"] # use other promt here, when history is stored
+        return input_dict["base_information"] # use other promt here, when history is stored
 
 def make_promt():
     input_dict = input_data.get_input_dict()
     last_word = input_data.last_word
     response = choose_promt(input_dict, last_word)
-    if response:
+    if response is None:
         return True
 
-    re = requests.post(url, headers=headers, json=data)
-    response_json = re.json()
-    output_text = response_json["output"][0]["content"][0]["text"]
-    words = output_text.split()
+    answer = create_response(response)
+    words = answer.split()
     choose_word(words)
 
 
