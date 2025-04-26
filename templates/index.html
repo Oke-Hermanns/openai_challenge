@@ -5,25 +5,19 @@
     <title>Blink Keyboard</title>
     <style>
         body {
+            font-family: sans-serif;
+            background: #f0f0f0;
             margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-        }
-
-        .container {
-            padding: 40px;
-            text-align: center;
         }
 
         .message-box {
-            margin-bottom: 20px;
+            margin: 30px auto;
             font-size: 24px;
-            padding: 10px;
-            background: white;
-            border: 2px solid #ccc;
+            padding: 15px;
+            background: #fff;
             width: 60%;
-            margin-left: auto;
-            margin-right: auto;
+            border: 2px solid #ccc;
+            text-align: center;
         }
 
         .grid {
@@ -31,19 +25,20 @@
             grid-template-columns: repeat(6, 60px);
             grid-gap: 10px;
             justify-content: center;
-            margin-top: 20px;
+            margin: auto;
         }
 
         .letter {
+            padding: 15px;
             background: white;
             border: 2px solid #aaa;
             border-radius: 8px;
-            padding: 15px;
+            text-align: center;
             font-size: 20px;
-            cursor: pointer;
         }
 
-        .letter:hover {
+        .highlight {
+            border: 3px solid #4287f5;
             background-color: #dceaff;
         }
 
@@ -52,34 +47,102 @@
             bottom: 20px;
             right: 20px;
             width: 200px;
-            height: auto;
-            border: 2px solid #444;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            border: 2px solid #444;
         }
 
-        video, img {
+        img {
             width: 100%;
-            height: auto;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="message-box" id="messageBox">Message will appear here...</div>
+<div class="message-box">
+    <span id="messageLabel">Message:</span> <span id="messageBox"></span>
+</div>
 
-    <div class="grid">
-        {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' %}
-            <div class="letter">{{ letter }}</div>
-        {% endfor %}
-    </div>
+<div id="grid" class="grid">
+    {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' %}
+        <div class="letter" id="cell-{{ loop.index0 }}">{{ letter }}</div>
+    {% endfor %}
 </div>
 
 <div class="video-box">
-    <img src="{{ url_for('video_feed') }}" alt="Webcam Feed">
+    <img src="{{ url_for('video_feed') }}" alt="Webcam">
 </div>
+
+<script>
+    const numCols = 6;
+    const numRows = 5;
+    const cells = [...document.querySelectorAll('.letter')];
+    let mode = 'row';  // 'row' or 'letter'
+    let selectedRow = 0;
+    let currentHighlight = 0;
+    let col = 0;
+
+    function highlightRow(rowIndex) {
+        cells.forEach((cell, i) => {
+            const row = Math.floor(i / numCols);
+            cell.classList.toggle('highlight', row === rowIndex);
+        });
+    }
+
+    function highlightLetterInRow(rowIndex, colIndex) {
+        cells.forEach((cell, i) => {
+            const row = Math.floor(i / numCols);
+            const col = i % numCols;
+            cell.classList.toggle('highlight', row === rowIndex && col === colIndex);
+        });
+    }
+
+    function getHighlightedLetter(rowIndex, colIndex) {
+        return cells[rowIndex * numCols + colIndex].textContent;
+    }
+
+    function appendToMessage(letter) {
+        const box = document.getElementById('messageBox');
+        box.textContent += letter;
+    }
+
+    setInterval(() => {
+        if (mode === 'row') {
+            highlightRow(currentHighlight);
+            currentHighlight = (currentHighlight + 1) % numRows;
+        } else if (mode === 'letter') {
+            highlightLetterInRow(selectedRow, col);
+            col = (col + 1) % numCols;
+        }
+    }, 2500);
+
+    async function checkBlink() {
+        try {
+            const response = await fetch('/blink');
+            const result = await response.json();
+
+            if (result.blink) {
+                if (mode === 'row') {
+                    selectedRow = (currentHighlight + numRows - 1) % numRows;
+                    currentHighlight = 0;
+                    col = 0;
+                    mode = 'letter';
+                } else if (mode === 'letter') {
+                    const selectedLetter = getHighlightedLetter(selectedRow, (col + numCols - 1) % numCols);
+                    appendToMessage(selectedLetter);
+                    mode = 'row';
+                    currentHighlight = 0;
+                }
+            }
+        } catch (err) {
+            console.error('Blink check failed', err);
+        }
+
+        setTimeout(checkBlink, 300);
+    }
+
+    checkBlink();
+</script>
 
 </body>
 </html>

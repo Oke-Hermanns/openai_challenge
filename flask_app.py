@@ -1,9 +1,8 @@
 import cv2
 import mediapipe as mp
 import time
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, jsonify
 
-# Initialize Flask
 app = Flask(__name__)
 
 # Initialize MediaPipe FaceMesh
@@ -18,6 +17,7 @@ blink_cooldown = 0.2
 last_blink_time = 0
 eye_closed = False
 blink_start_time = None
+blink_detected_flag = False  # Shared flag
 
 # Average eye openness from both eyes
 def get_avg_eye_openness(landmarks):
@@ -25,14 +25,12 @@ def get_avg_eye_openness(landmarks):
     right_eye = abs(landmarks[159].y - landmarks[145].y)
     return (left_eye + right_eye) / 2
 
-# Route to serve the HTML page with the grid and message box
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Function to generate webcam feed for Flask
 def gen_frames():
-    global last_blink_time, eye_closed, blink_start_time
+    global last_blink_time, eye_closed, blink_start_time, blink_detected_flag
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -56,22 +54,27 @@ def gen_frames():
                 if eye_closed and blink_start_time:
                     blink_time = current_time - blink_start_time
                     if blink_time < blink_duration and current_time - last_blink_time > blink_cooldown:
-                        print("Blink detected!")
+                        blink_detected_flag = True
                         last_blink_time = current_time
                     blink_start_time = None
                     eye_closed = False
 
-        # Convert frame to JPEG format for streaming
+        # Encode and stream frame
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
-
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
-# Route to stream webcam feed
 @app.route('/video_feed')
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/blink')
+def check_blink():
+    global blink_detected_flag
+    blink = blink_detected_flag
+    blink_detected_flag = False
+    return jsonify({'blink': blink})
 
 if __name__ == '__main__':
     app.run(debug=True)
