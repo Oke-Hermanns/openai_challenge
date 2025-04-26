@@ -1,5 +1,6 @@
 import os
 import cv2
+import time
 import mediapipe as mp
 import time
 from flask import Flask, render_template, Response, jsonify, request, redirect, url_for
@@ -32,9 +33,7 @@ def get_avg_eye_openness(landmarks):
 
 @app.route('/')
 def index():
-    input_data.user_sentence = ""
-    input_data.last_word = ""
-    return render_template('index.html')
+    return render_template('index.html', message=input_data.user_sentence)
 
 
 def gen_frames():
