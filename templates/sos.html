@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Emergency SOS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e8edf3;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .message-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 800px;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #e24a4a;
+            margin-bottom: 30px;
+        }
+        
+        .alert-message {
+            font-size: 28px;
+            line-height: 1.5;
+            margin: 30px 0;
+            padding: 20px;
+            background: #fff5f5;
+            border-radius: 8px;
+            border-left: 5px solid #e24a4a;
+        }
+        
+        .action-button {
+            display: inline-block;
+            margin: 15px;
+            padding: 15px 30px;
+            background-color: #e24a4a;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+        
+        .cancel-button {
+            background-color: #888;
+        }
+        
+        .action-button:hover {
+            background-color: #c03a3a;
+            transform: translateY(-2px);
+        }
+        
+        .cancel-button:hover {
+            background-color: #666;
+        }
+        
+        .button-container {
+            margin-top: 30px;
+        }
+        
+        .countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e24a4a;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="message-container">
+        <h1>Emergency SOS</h1>
+        
+        <div class="alert-message">
+            Emergency services will be contacted in <span class="countdown">30</span> seconds
+        </div>
+        
+        <p>Your location has been shared with emergency contacts. Stay calm and wait for assistance.</p>
+        
+        <div class="button-container">
+            <a href="#" class="action-button">Call Now</a>
+            <a href="/" class="action-button cancel-button">Cancel SOS</a>
+        </div>
+    </div>
+    
+    <script>
+        // Simple countdown timer
+        let seconds = 30;
+        const countdownElement = document.querySelector('.countdown');
+        
+        const timer = setInterval(() => {
+            seconds--;
+            countdownElement.textContent = seconds;
+            
+            if (seconds <= 0) {
+                clearInterval(timer);
+                countdownElement.textContent = "0";
+                alert("Emergency call would be placed now");
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

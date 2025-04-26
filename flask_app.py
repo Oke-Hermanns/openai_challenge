@@ -2,7 +2,6 @@ import os
 import cv2
 import time
 import mediapipe as mp
-import time
 from flask import Flask, render_template, Response, jsonify, request, redirect, url_for
 import input_data
 from gpt_connection import make_promt
@@ -39,6 +38,7 @@ def index():
 
 def gen_frames():
     global last_blink_time, eye_closed, blink_start_time, blink_detected_flag
+    time.sleep(0.8)
     cap = cv2.VideoCapture(0)
     while True:
         ret, frame = cap.read()
@@ -122,10 +122,10 @@ def select_word():
     elif word_index == 13: # Reset button
         input_data.user_sentence = " "
         return jsonify({'redirect': url_for('index')})
-    elif word_index == 14: # Subbmit button
-        pass
+    elif word_index == 14: # Submit button
+        return jsonify({'redirect': url_for('final')})
     elif word_index == 15: # SOS button
-        pass
+        return jsonify({'redirect': url_for('sos')})
     elif 0 <= word_index < len(words): # ordinary words
         word = words[word_index]
         if word:
@@ -139,6 +139,13 @@ def select_word():
     return jsonify({'redirect': url_for('word_selection')})
 
 
+@app.route('/final', methods=['GET', 'POST'])
+def final():
+    return render_template('final.html', final_sentence=input_data.user_sentence)
+
+@app.route('/sos', methods=['GET', 'POST'])
+def sos():
+    return render_template('sos.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

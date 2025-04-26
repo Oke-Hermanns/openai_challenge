@@ -35,7 +35,7 @@
 
         .word {
             padding: 20px;
-            background: #ffffff; /* ✅ normal words stay white */
+            background: #ffffff;
             border: 2px solid #ddd;
             border-radius: 10px;
             text-align: center;
@@ -56,21 +56,19 @@
             box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
         }
 
-        /* 🔥 Special words initially grey */
+        .word.highlight {
+            border: 3px solid #4a90e2;
+            background-color: #dbeaff;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+        }
+
         .special-word {
-            background-color: #f0f0f0; /* ✅ light grey background for special */
+            background-color: #d8d6d6;
             border: 2px solid #aaa;
         }
 
         .special-word:hover {
             background-color: #d0d0d0;
-        }
-
-        /* 🔥 Special-word highlighted (red) */
-        .special-highlight {
-            border: 3px solid #e74c3c;
-            background-color: #ffd6d3;
-            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
         }
 
         .video-box {
@@ -116,13 +114,9 @@
     <div class="word special-word" id="cell-extra-keyboard">keyboard</div>
     <div class="word special-word" id="cell-extra-reset">reset</div>
     <div class="word special-word" id="cell-extra-submit">submit</div>
-    <div class="word special-word" id="extra-button">extra button</div>
+    <div class="word special-word" id="emergency">Emergency</div>
 </div>
-<!--
-<div style="text-align: center;">
-    <a href="/" class="home-button">Start Over</a>
-</div>
--->
+
 <div class="video-box">
     <img src="{{ url_for('video_feed') }}" alt="Webcam">
 </div>
@@ -140,7 +134,6 @@
         wordElements.forEach((word, i) => {
             const row = Math.floor(i / numCols);
             word.classList.toggle('highlight', row === rowIndex);
-            word.classList.remove('special-highlight');
         });
     }
 
@@ -150,16 +143,12 @@
             const column = i % numCols;
             word.classList.remove('highlight');
             if (row === rowIndex && column === colIndex) {
-                if (word.classList.contains('special-word')) {
-                    word.classList.add('special-highlight');
-                } else {
-                    word.classList.add('highlight');
-                }
-            } else {
-                word.classList.remove('special-highlight');
+                word.classList.add('highlight');
+                
             }
         });
     }
+
 
     function getHighlightedWord(rowIndex, colIndex) {
         const index = rowIndex * numCols + colIndex;
