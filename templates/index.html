@@ -5,68 +5,88 @@
     <title>Blink Keyboard</title>
     <style>
         body {
-            font-family: sans-serif;
-            background: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e8edf3;
             margin: 0;
+            padding: 20px;
         }
 
         .message-box {
             margin: 30px auto;
-            font-size: 24px;
-            padding: 15px;
-            background: #fff;
-            width: 60%;
-            border: 2px solid #ccc;
+            font-size: 26px;
+            padding: 20px;
+            background: #ffffff;
+            width: 70%;
+            max-width: 700px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
+            color: #333;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(6, 60px);
-            grid-gap: 10px;
+            grid-template-columns: repeat(6, 80px);
+            grid-gap: 15px;
             justify-content: center;
-            margin: auto;
+            margin: 40px auto;
         }
 
         .letter {
-            padding: 15px;
-            background: white;
-            border: 2px solid #aaa;
-            border-radius: 8px;
+            padding: 20px;
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 10px;
             text-align: center;
-            font-size: 20px;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .letter:hover {
+            background-color: #f5faff;
+            transform: translateY(-2px);
         }
 
         .highlight {
-            border: 3px solid #4287f5;
-            background-color: #dceaff;
+            border: 3px solid #4a90e2;
+            background-color: #dbeaff;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
         }
 
         .video-box {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 200px;
-            border-radius: 8px;
+            width: 220px;
+            border-radius: 12px;
             overflow: hidden;
-            border: 2px solid #444;
+            border: 2px solid #4a90e2;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         img {
             width: 100%;
+            display: block;
         }
     </style>
 </head>
 <body>
 
 <div class="message-box">
-    <span id="messageLabel">Message:</span> <span id="messageBox"></span>
+    <span id="messageLabel">Message:</span> <br><br>
+    <span id="messageBox"></span>
 </div>
 
 <div id="grid" class="grid">
-    {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' %}
+    {% set keys = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' %}
+    {% for letter in keys %}
         <div class="letter" id="cell-{{ loop.index0 }}">{{ letter }}</div>
     {% endfor %}
+    <div class="letter" id="cell-space">⎵</div>
+    <div class="letter" id="cell-delete">DEL</div>
+    <div class="letter" id="cell-submit">SUB</div>
 </div>
 
 <div class="video-box">
@@ -77,7 +97,7 @@
     const numCols = 6;
     const numRows = 5;
     const cells = [...document.querySelectorAll('.letter')];
-    let mode = 'row';  // 'row' or 'letter'
+    let mode = 'row';
     let selectedRow = 0;
     let currentHighlight = 0;
     let col = 0;
@@ -98,13 +118,48 @@
     }
 
     function getHighlightedLetter(rowIndex, colIndex) {
-        return cells[rowIndex * numCols + colIndex].textContent;
+        const index = rowIndex * numCols + colIndex;
+        if (index < cells.length) {
+            return cells[index].textContent;
+        }
+        return '';
     }
 
     function appendToMessage(letter) {
-        const box = document.getElementById('messageBox');
+    const box = document.getElementById('messageBox');
+    if (letter === '⎵') {
+        box.textContent += ' ';
+    } else if (letter === 'DEL') {
+        box.textContent = box.textContent.slice(0, -1);
+    } else if (letter === 'SUB') {
+        const finalMessage = box.textContent.trim();
+        if (finalMessage.length > 0) {
+            fetch(`/suggest?message=${encodeURIComponent(finalMessage)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const suggestions = data.suggestions;
+                    const suggestionList = document.getElementById('suggestionList');
+                    suggestionList.innerHTML = '';
+                    suggestions.forEach(s => {
+                        const li = document.createElement('li');
+                        li.textContent = s;
+                        suggestionList.appendChild(li);
+                    });
+                    document.getElementById('suggestionPopup').style.display = 'flex';
+                });
+            // box.textContent = ''; // clear
+        } else {
+            alert('No message to submit!');
+        }
+    } else {
         box.textContent += letter;
     }
+}
+
+function closeSuggestionPopup() {
+    document.getElementById('suggestionPopup').style.display = 'none';
+}
+
 
     setInterval(() => {
         if (mode === 'row') {
@@ -114,7 +169,7 @@
             highlightLetterInRow(selectedRow, col);
             col = (col + 1) % numCols;
         }
-    }, 2500);
+    }, 1000);
 
     async function checkBlink() {
         try {
@@ -143,6 +198,14 @@
 
     checkBlink();
 </script>
+
+<div id="suggestionPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; padding:30px; border-radius:12px; max-width:500px; width:80%; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
+        <h2>Suggestions</h2>
+        <ul id="suggestionList" style="list-style:none; padding:0; margin:20px 0; font-size:18px;"></ul>
+        <button onclick="closeSuggestionPopup()" style="margin-top:15px; padding:10px 20px; font-size:16px; background-color:#4a90e2; color:white; border:none; border-radius:6px; cursor:pointer;">Back</button>
+    </div>
+</div>
 
 </body>
 </html>

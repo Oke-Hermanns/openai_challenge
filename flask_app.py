@@ -1,7 +1,7 @@
 import cv2
 import mediapipe as mp
 import time
-from flask import Flask, render_template, Response, jsonify
+from flask import Flask, render_template, Response, jsonify, request
 
 app = Flask(__name__)
 
@@ -59,7 +59,6 @@ def gen_frames():
                     blink_start_time = None
                     eye_closed = False
 
-        # Encode and stream frame
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
@@ -75,6 +74,24 @@ def check_blink():
     blink = blink_detected_flag
     blink_detected_flag = False
     return jsonify({'blink': blink})
+
+@app.route('/suggest')
+def suggest():
+    message = request.args.get('message', '')
+    # Simple static placeholder suggestions based on message
+    if "HEL" in message.upper():
+        suggestions = ["HELLO", "HELP", "HELICOPTER"]
+    elif "THA" in message.upper():
+        suggestions = ["THANK YOU", "THAT'S NICE", "THAT WAS FUN"]
+    elif len(message) == 0:
+        suggestions = ["TYPE SOMETHING FIRST!", "START BLINKING!", "WELCOME!"]
+    else:
+        suggestions = [
+            message + " PLEASE",
+            message + " NOW",
+            "I MEANT: " + message[::-1]  # just reversing text as a fun mock
+        ]
+    return jsonify({'suggestions': suggestions})
 
 if __name__ == '__main__':
     app.run(debug=True)
