@@ -109,6 +109,7 @@ def select_word():
         else:
             user_sentence = word
         input_data.last_word = word
+        input_data.user_sentence = user_sentence
     
     return jsonify({'success': True})
 
