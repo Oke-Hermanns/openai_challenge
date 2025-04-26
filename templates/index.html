@@ -55,6 +55,23 @@
             box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
         }
 
+        /* New glow effect when selected by blink */
+        .blink-selected {
+            animation: glow 1s ease-out;
+        }
+
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 5px #4a90e2, 0 0 10px #4a90e2;
+            }
+            50% {
+                box-shadow: 0 0 20px #4a90e2, 0 0 40px #4a90e2;
+            }
+            100% {
+                box-shadow: 0 0 5px #4a90e2, 0 0 10px #4a90e2;
+            }
+        }
+
         .video-box {
             position: fixed;
             bottom: 20px;
@@ -97,7 +114,6 @@
     <img src="{{ url_for('video_feed') }}" alt="Webcam">
 </div>
 
-<!-- This has to be changed, value 1 right now is just there to make it work somehow -->
 <form id="messageForm" class="hidden-form" action="/submit" method="post">
     <input type="hidden" id="messageInput" name="message" value="1">
 </form>
@@ -129,9 +145,9 @@
     function getHighlightedLetter(rowIndex, colIndex) {
         const index = rowIndex * numCols + colIndex;
         if (index < cells.length) {
-            return cells[index].textContent;
+            return cells[index];
         }
-        return '';
+        return null;
     }
 
     function appendToMessage(letter) {
@@ -143,7 +159,6 @@
         } else if (letter === 'SUB') {
             const finalMessage = box.textContent.trim();
             if (finalMessage.length > 0) {
-                // Set the message in the hidden form and submit
                 document.getElementById('messageInput').value = finalMessage;
                 document.getElementById('messageForm').submit();
             } else {
@@ -176,8 +191,14 @@
                     col = 0;
                     mode = 'letter';
                 } else if (mode === 'letter') {
-                    const selectedLetter = getHighlightedLetter(selectedRow, (col + numCols - 1) % numCols);
-                    appendToMessage(selectedLetter);
+                    const selectedCell = getHighlightedLetter(selectedRow, (col + numCols - 1) % numCols);
+                    if (selectedCell) {
+                        selectedCell.classList.add('blink-selected'); // <<< ADD GLOW
+                        setTimeout(() => {
+                            selectedCell.classList.remove('blink-selected');
+                        }, 1000); // Glow lasts 1 second
+                        appendToMessage(selectedCell.textContent);
+                    }
                     mode = 'row';
                     currentHighlight = 0;
                 }
