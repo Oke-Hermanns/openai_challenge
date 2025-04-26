@@ -5,7 +5,6 @@ import time
 from flask import Flask, render_template, Response, jsonify, request, redirect, url_for
 import input_data
 
-os.environ["OPENAI_API_KEY"] = "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"
 from gpt_connection import make_promt
 
 app = Flask(__name__)
