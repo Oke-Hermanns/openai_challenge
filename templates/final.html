@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Message Complete</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e8edf3;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .message-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 800px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #4a90e2;
+            margin-bottom: 30px;
+        }
+
+        .final-message {
+            font-size: 28px;
+            line-height: 1.5;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f5faff;
+            border-radius: 8px;
+            border-left: 5px solid #4a90e2;
+        }
+
+        .home-button {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 15px 30px;
+            background-color: #4a90e2;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .home-button:hover {
+            background-color: #3a7bc0;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="message-container">
+        <h1>Message Complete</h1>
+        
+        <div class="final-message">
+            {{ final_sentence }}
+        </div>
+        
+        <p>Your message has been completed and saved.</p>
+        
+        <a href="/" class="home-button">Start New Message</a>
+    </div>
+</body>
+</html>

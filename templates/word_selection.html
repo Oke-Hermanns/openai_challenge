@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Word Selection</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e8edf3;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .message-box {
+            margin: 30px auto;
+            font-size: 26px;
+            padding: 20px;
+            background: #ffffff;
+            width: 70%;
+            max-width: 700px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            color: #333;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 15px;
+            justify-content: center;
+            margin: 40px auto;
+            max-width: 700px;
+        }
+
+        .word {
+            padding: 20px;
+            background: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .word:hover {
+            background-color: #f5faff;
+            transform: translateY(-2px);
+        }
+
+        .highlight {
+            border: 3px solid #4a90e2;
+            background-color: #dbeaff;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+        }
+
+        .video-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 220px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #4a90e2;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .home-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4a90e2;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 18px;
+        }
+
+        img {
+            width: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="message-box">
+    <span id="messageLabel">Current Message:</span> <br><br>
+    <span id="messageBox">{{ user_sentence }}</span>
+</div>
+
+<div id="grid" class="grid">
+    {% for word in words %}
+        <div class="word" id="cell-{{ loop.index0 }}">{{ word }}</div>
+    {% endfor %}
+</div>
+
+<div style="text-align: center;">
+    <a href="/" class="home-button">Start Over</a>
+</div>
+
+<div class="video-box">
+    <img src="{{ url_for('video_feed') }}" alt="Webcam">
+</div>
+
+<script>
+    // Get all word elements
+    const wordElements = document.querySelectorAll('.word');
+    const numWords = wordElements.length;
+    let currentHighlight = 0;
+
+    function highlightWord(index) {
+        wordElements.forEach((word, i) => {
+            word.classList.toggle('highlight', i === index);
+        });
+    }
+
+    setInterval(() => {
+        highlightWord(currentHighlight);
+        currentHighlight = (currentHighlight + 1) % numWords;
+    }, 1000);
+
+    async function checkBlink() {
+        try {
+            const response = await fetch('/blink');
+            const result = await response.json();
+
+            if (result.blink) {
+                const selectedWord = currentHighlight === 0 ? 0 : (currentHighlight - 1); // Select the previous highlighted word
+                window.location.href = `/select_word/${selectedWord}`;
+            }
+        } catch (err) {
+            console.error('Blink check failed', err);
+        }
+
+        setTimeout(checkBlink, 300);
+    }
+
+    checkBlink();
+</script>
+
+</body>
+</html>
