@@ -97,7 +97,8 @@ def submit_message():
     message = request.form.get('message', '')
 
     if message:
-        input_data.user_sentence = message
+        input_data.user_sentence = message[0].upper() + message[1:].lower()
+        print(input_data.user_sentence)
         return redirect(url_for('word_selection'))
     else:
         return redirect(url_for('index'))

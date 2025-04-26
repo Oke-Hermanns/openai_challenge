@@ -16,15 +16,6 @@ def create_response(input_text, temperature=0.2, model="gpt-4.1"):
 
     return chatgpt_reply
 
-
-def choose_word(words):
-    print(words)
-    number = int(input("enter the position of the word.\n"))
-    input_data.user_sentence = input_data.user_sentence + " " + words[number]
-    input_data.last_word = words[number]
-    print(input_data.user_sentence)
-
-
 def choose_promt(input_dict, last_word):
     return input_dict["nxt"]
 
