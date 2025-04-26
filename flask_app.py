@@ -6,7 +6,6 @@ from flask import Flask, render_template, Response, jsonify, request, redirect, 
 import input_data
 from gpt_connection import make_promt
 
-
 app = Flask(__name__)
 
 # Initialize MediaPipe FaceMesh
