@@ -12,7 +12,3 @@ def get_input_dict():
         Include nothing else in the response. Do not include numbers or any special characters.
         The last word has to be 'end'.""",
     }
-
-
-basic_verbs = ['to be', 'to do', 'to have', 'to say', 'to go', 'to get', 'to make', 'to know', 'to think',
-               'to take', 'to find', 'to use']

@@ -35,12 +35,4 @@ def make_promt():
 
     answer = create_response(response)
     words = answer.split()
-    choose_word(words)
-
-
-def main():
-    for i in range(0,12): # more than 12 words should not be necessary
-        make_promt()
-
-if __name__=="__main__":
-    main()
+    return words

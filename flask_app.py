@@ -2,16 +2,10 @@ import cv2
 import mediapipe as mp
 import time
 from flask import Flask, render_template, Response, jsonify, request, redirect, url_for
-from openai import OpenAI
 from gpt_connection import make_promt
+import input_data
+
 app = Flask(__name__)
-
-# Initialize OpenAI client
-client = OpenAI()
-
-# Global variables for tracking user input
-user_sentence = ""
-last_word = ""
 
 # Initialize MediaPipe FaceMesh
 mp_face_mesh = mp.solutions.face_mesh.FaceMesh(refine_landmarks=True)
@@ -34,10 +28,8 @@ def get_avg_eye_openness(landmarks):
 
 @app.route('/')
 def index():
-    global user_sentence, last_word
-    # Reset user sentence when returning to home page
-    user_sentence = ""
-    last_word = ""
+    input_data.user_sentence = ""
+    input_data.last_word = ""
     return render_template('index.html')
 
 def gen_frames():
@@ -88,39 +80,37 @@ def check_blink():
     return jsonify({'blink': blink})
 
 def generate_word_suggestions():
-    try:
-        response = make_promt()
-        words = response.choices[0].message.content.strip().split()
-        # Ensure we have exactly 12 words
-        if len(words) > 12:
-            words = words[:12]
-        elif len(words) < 12:
-            # Add some generic words if OpenAI returned fewer than 12
-            default_words = ["the", "and", "but", "or", "because", "if", "when", "what", "how", "please", "thanks", "yes"]
-            words.extend(default_words[:(12-len(words))])
-        return words
-    except Exception as e:
-        print(f"Error generating suggestions: {e}")
-        # Return fallback words if API call fails
-        return ["the", "and", "but", "or", "because", "if", "when", "what", "how", "please", "thanks", "yes"]
+    words = make_promt()
+    return words
 
 @app.route('/submit', methods=['POST'])
 def submit_message():
-    global user_sentence
     message = request.form.get('message', '')
     
     if message:
-        user_sentence = message
+        input_data.user_sentence = message
         return redirect(url_for('word_selection'))
     else:
         return redirect(url_for('index'))
     
 @app.route('/word_selection')
 def word_selection():
-    global user_sentence, last_word
-    # Get word suggestions
     words = generate_word_suggestions()
-    return render_template('word_selection.html', message=user_sentence, words=words)
+    return render_template('word_selection.html', message=input_data.user_sentence, words=words)
+
+@app.route('/select_word', methods=['POST'])
+def select_word():
+    user_sentence = input_data.user_sentence
+    word = request.form.get('word', '')
+    
+    if word:
+        if user_sentence:
+            user_sentence += " " + word
+        else:
+            user_sentence = word
+        input_data.last_word = word
+    
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     app.run(debug=True)
