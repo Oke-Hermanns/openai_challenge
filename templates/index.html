@@ -55,7 +55,6 @@
             box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
         }
 
-        /* New glow effect when selected by blink */
         .blink-selected {
             animation: glow 1s ease-out;
         }
@@ -97,8 +96,7 @@
 
 <div class="message-box">
     <span id="messageLabel">Message:</span> <br><br>
-    <span id="messageBox"></span>
-    {{message}}
+    <span id="messageBox">{{ message }}</span>
 </div>
 
 <div id="grid" class="grid">
@@ -116,7 +114,7 @@
 </div>
 
 <form id="messageForm" class="hidden-form" action="/submit" method="post">
-    <input type="hidden" id="messageInput" name="message" value="1">
+    <input type="hidden" id="messageInput" name="message" value="">
 </form>
 
 <script>
@@ -127,6 +125,32 @@
     let selectedRow = 0;
     let currentHighlight = 0;
     let col = 0;
+
+    let message = "{{ message | default('') }}"; // Initialize from server-side if any
+
+    function updateBox() {
+        document.getElementById('messageBox').textContent = message;
+    }
+
+    function appendToMessage(letter) {
+        if (letter === '⎵') {
+            message += ' ';
+        } else if (letter === 'DEL') {
+            message = message.slice(0, -1);
+        } else if (letter === 'SUB') {
+            const finalMessage = message.trim();
+            if (finalMessage.length > 0) {
+                document.getElementById('messageInput').value = finalMessage;
+                document.getElementById('messageForm').submit();
+            } else {
+                alert('No message to submit!');
+            }
+            return; // No need to update box after submitting
+        } else {
+            message += letter;
+        }
+        updateBox();
+    }
 
     function highlightRow(rowIndex) {
         cells.forEach((cell, i) => {
@@ -149,25 +173,6 @@
             return cells[index];
         }
         return null;
-    }
-
-    function appendToMessage(letter) {
-        const box = document.getElementById('messageBox');
-        if (letter === '⎵') {
-            box.textContent += ' ';
-        } else if (letter === 'DEL') {
-            box.textContent = box.textContent.slice(0, -1);
-        } else if (letter === 'SUB') {
-            const finalMessage = box.textContent.trim();
-            if (finalMessage.length > 0) {
-                document.getElementById('messageInput').value = finalMessage;
-                document.getElementById('messageForm').submit();
-            } else {
-                alert('No message to submit!');
-            }
-        } else {
-            box.textContent += letter;
-        }
     }
 
     setInterval(() => {
@@ -194,10 +199,10 @@
                 } else if (mode === 'letter') {
                     const selectedCell = getHighlightedLetter(selectedRow, (col + numCols - 1) % numCols);
                     if (selectedCell) {
-                        selectedCell.classList.add('blink-selected'); // <<< ADD GLOW
+                        selectedCell.classList.add('blink-selected');
                         setTimeout(() => {
                             selectedCell.classList.remove('blink-selected');
-                        }, 1000); // Glow lasts 1 second
+                        }, 1000);
                         appendToMessage(selectedCell.textContent);
                     }
                     mode = 'row';
@@ -211,6 +216,7 @@
         setTimeout(checkBlink, 300);
     }
 
+    updateBox(); // Call once initially
     checkBlink();
 </script>
 

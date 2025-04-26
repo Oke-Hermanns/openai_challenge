@@ -6,6 +6,7 @@ import time
 from flask import Flask, render_template, Response, jsonify, request, redirect, url_for
 import input_data
 from gpt_connection import make_promt
+  # put camera here
 
 words = None
 app = Flask(__name__)
@@ -38,10 +39,11 @@ def index():
 
 def gen_frames():
     global last_blink_time, eye_closed, blink_start_time, blink_detected_flag
-    cap = cv2.VideoCapture(0)  # put camera here
+    cap = cv2.VideoCapture(0)
     while True:
         ret, frame = cap.read()
         if not ret:
+            cap.release()
             break
 
         frame = cv2.flip(frame, 1)
@@ -116,6 +118,7 @@ def select_word():
 
     if word_index == 12:
         # Tell frontend to go to index
+        input_data.user_sentence = user_sentence + " "
         return jsonify({'redirect': url_for('index')})
 
     if 0 <= word_index < len(words):
