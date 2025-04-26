@@ -35,7 +35,7 @@
 
         .word {
             padding: 20px;
-            background: #ffffff;
+            background: #ffffff; /* ✅ normal words stay white */
             border: 2px solid #ddd;
             border-radius: 10px;
             text-align: center;
@@ -54,6 +54,23 @@
             border: 3px solid #4a90e2;
             background-color: #dbeaff;
             box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+        }
+
+        /* 🔥 Special words initially grey */
+        .special-word {
+            background-color: #f0f0f0; /* ✅ light grey background for special */
+            border: 2px solid #aaa;
+        }
+
+        .special-word:hover {
+            background-color: #d0d0d0;
+        }
+
+        /* 🔥 Special-word highlighted (red) */
+        .special-highlight {
+            border: 3px solid #e74c3c;
+            background-color: #ffd6d3;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
         }
 
         .video-box {
@@ -95,6 +112,10 @@
     {% for word in words %}
         <div class="word" id="cell-{{ loop.index0 }}">{{ word }}</div>
     {% endfor %}
+    <!-- Manually added special words -->
+    <div class="word special-word" id="cell-extra-submit">submit</div>
+    <div class="word special-word" id="cell-extra-reset">reset</div>
+    <div class="word special-word" id="cell-extra-keyboard">keyboard</div>
 </div>
 
 <div style="text-align: center;">
@@ -106,14 +127,20 @@
 </div>
 
 <script>
-    // Get all word elements
     const wordElements = document.querySelectorAll('.word');
     const numWords = wordElements.length;
     let currentHighlight = 0;
 
     function highlightWord(index) {
         wordElements.forEach((word, i) => {
-            word.classList.toggle('highlight', i === index);
+            word.classList.remove('highlight', 'special-highlight');
+            if (i === index) {
+                if (word.classList.contains('special-word')) {
+                    word.classList.add('special-highlight');
+                } else {
+                    word.classList.add('highlight');
+                }
+            }
         });
     }
 
@@ -128,23 +155,22 @@
             const result = await response.json();
 
             if (result.blink) {
-    const selectedWord = currentHighlight === 0 ? 0 : (currentHighlight - 1);
+                const selectedWord = currentHighlight === 0 ? 0 : (currentHighlight - 1 + numWords) % numWords;
 
-    fetch('/select_word', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: `word=${selectedWord}`
-    })
-    .then(response => response.text())
-    .then(data => {
-        console.log(data);
-        // Optionally reload the page or update UI
-        window.location.reload(); // if you want to refresh
-    })
-    .catch(error => console.error('Error selecting word:', error));
-}
+                fetch('/select_word', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `word=${selectedWord}`
+                })
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+                    window.location.reload();
+                })
+                .catch(error => console.error('Error selecting word:', error));
+            }
 
         } catch (err) {
             console.error('Blink check failed', err);
