@@ -2,7 +2,7 @@ from openai import OpenAI
 import input_data
 client = OpenAI()
 
-messages = []
+messages = [{"role": "system", "content": input_data.get_input_dict()["general_information"]}]
 
 def create_response(input_text, temperature=0.2, model="gpt-4.1"):
     messages.append({"role": "user", "content": input_text})
@@ -26,19 +26,14 @@ def choose_word(words):
 
 
 def choose_promt(input_dict, last_word):
-    if last_word == "":
-        return input_dict["general_information"]
-    elif last_word == "end":
-        return None
-    else:
-        return input_dict["nxt"]
+    return input_dict["nxt"]
 
 def make_promt():
     input_dict = input_data.get_input_dict()
     last_word = input_data.last_word
     response = choose_promt(input_dict, last_word)
-    if response is None:
-        return True
-    answer = create_response(response)
-    words = answer.split()
+    words = []
+    while(len(words)!= 12):
+        answer = create_response(response)
+        words = answer.split()
     return words
