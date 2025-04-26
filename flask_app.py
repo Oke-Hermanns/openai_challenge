@@ -38,7 +38,6 @@ def index():
 
 def gen_frames():
     global last_blink_time, eye_closed, blink_start_time, blink_detected_flag
-    time.sleep(0.8)
     cap = cv2.VideoCapture(0)
     while True:
         ret, frame = cap.read()
