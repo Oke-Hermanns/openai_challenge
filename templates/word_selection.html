@@ -128,9 +128,24 @@
             const result = await response.json();
 
             if (result.blink) {
-                const selectedWord = currentHighlight === 0 ? 0 : (currentHighlight - 1); // Select the previous highlighted word
-                window.location.href = `/select_word/${selectedWord}`;
-            }
+    const selectedWord = currentHighlight === 0 ? 0 : (currentHighlight - 1);
+
+    fetch('/select_word', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `word=${selectedWord}`
+    })
+    .then(response => response.text())
+    .then(data => {
+        console.log(data);
+        // Optionally reload the page or update UI
+        window.location.reload(); // if you want to refresh
+    })
+    .catch(error => console.error('Error selecting word:', error));
+}
+
         } catch (err) {
             console.error('Blink check failed', err);
         }

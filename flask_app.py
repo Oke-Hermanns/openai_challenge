@@ -5,6 +5,7 @@ from flask import Flask, render_template, Response, jsonify, request, redirect, 
 from gpt_connection import make_promt
 import input_data
 
+words = None
 app = Flask(__name__)
 
 # Initialize MediaPipe FaceMesh
@@ -80,8 +81,8 @@ def check_blink():
     return jsonify({'blink': blink})
 
 def generate_word_suggestions():
-    words = make_promt()
-    return words
+    words_ = make_promt()
+    return words_
 
 @app.route('/submit', methods=['POST'])
 def submit_message():
@@ -95,14 +96,15 @@ def submit_message():
     
 @app.route('/word_selection')
 def word_selection():
+    global words
     words = generate_word_suggestions()
     return render_template('word_selection.html', message=input_data.user_sentence, words=words)
 
 @app.route('/select_word', methods=['POST'])
 def select_word():
     user_sentence = input_data.user_sentence
-    word = request.form.get('word', '')
-    
+    word = int(request.form.get('word', ''))
+    word = words[word]
     if word:
         if user_sentence:
             user_sentence += " " + word
@@ -111,7 +113,8 @@ def select_word():
         input_data.last_word = word
         input_data.user_sentence = user_sentence
     
-    return jsonify({'success': True})
+    # return jsonify({'success': True})
+    word_selection()
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,5 +1,5 @@
-user_sentence = "I"
-last_word = "I"
+user_sentence = ""
+last_word = ""
 
 def get_input_dict():
     return {
