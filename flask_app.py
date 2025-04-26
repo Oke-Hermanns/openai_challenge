@@ -109,22 +109,28 @@ def word_selection():
     words = generate_word_suggestions()
     return render_template('word_selection.html', message=input_data.user_sentence, words=words)
 
-
 @app.route('/select_word', methods=['POST'])
 def select_word():
+    global words
     user_sentence = input_data.user_sentence
-    word = int(request.form.get('word', ''))
-    word = words[word]
-    if word:
-        if user_sentence:
-            user_sentence += " " + word
-        else:
-            user_sentence = word
-        input_data.last_word = word
-        input_data.user_sentence = user_sentence
-    
-    # return jsonify({'success': True})
-    word_selection()
+    word_index = int(request.form.get('word', ''))
+
+    if word_index == 13:
+        # Tell frontend to go to index
+        return jsonify({'redirect': url_for('index')})
+
+    if 0 <= word_index < len(words):
+        word = words[word_index]
+        if word:
+            if user_sentence:
+                user_sentence += " " + word
+            else:
+                user_sentence = word
+            input_data.last_word = word
+            input_data.user_sentence = user_sentence
+
+    return jsonify({'redirect': url_for('word_selection')})
+
 
 
 if __name__ == '__main__':

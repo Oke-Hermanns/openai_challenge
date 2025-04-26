@@ -113,9 +113,9 @@
         <div class="word" id="cell-{{ loop.index0 }}">{{ word }}</div>
     {% endfor %}
     <!-- Manually added special words -->
-    <div class="word special-word" id="cell-extra-submit">submit</div>
-    <div class="word special-word" id="cell-extra-reset">reset</div>
     <div class="word special-word" id="cell-extra-keyboard">keyboard</div>
+    <div class="word special-word" id="cell-extra-reset">reset</div>
+    <div class="word special-word" id="cell-extra-submit">submit</div>
 </div>
 <!--
 <div style="text-align: center;">
@@ -164,10 +164,14 @@
                     },
                     body: `word=${selectedWord}`
                 })
-                .then(response => response.text())
+                .then(response => response.json())  // <-- use .json() not .text()
                 .then(data => {
                     console.log(data);
-                    window.location.reload();
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        window.location.reload();
+                    }
                 })
                 .catch(error => console.error('Error selecting word:', error));
             }
