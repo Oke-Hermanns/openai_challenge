@@ -1,9 +1,12 @@
+import os
 import cv2
 import mediapipe as mp
 import time
 from flask import Flask, render_template, Response, jsonify, request, redirect, url_for
-from gpt_connection import make_promt
 import input_data
+
+os.environ["OPENAI_API_KEY"] = "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"
+from gpt_connection import make_promt
 
 app = Flask(__name__)
 
@@ -20,11 +23,13 @@ eye_closed = False
 blink_start_time = None
 blink_detected_flag = False
 
+
 # Average eye openness from both eyes
 def get_avg_eye_openness(landmarks):
     left_eye = abs(landmarks[386].y - landmarks[374].y)
     right_eye = abs(landmarks[159].y - landmarks[145].y)
     return (left_eye + right_eye) / 2
+
 
 @app.route('/')
 def index():
@@ -32,24 +37,25 @@ def index():
     input_data.last_word = ""
     return render_template('index.html')
 
+
 def gen_frames():
     global last_blink_time, eye_closed, blink_start_time, blink_detected_flag
-    cap = cv2.VideoCapture(0) # put camera here
+    cap = cv2.VideoCapture(0)  # put camera here
     while True:
         ret, frame = cap.read()
         if not ret:
             break
-        
+
         frame = cv2.flip(frame, 1)
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = mp_face_mesh.process(rgb)
-        
+
         if results.multi_face_landmarks:
             landmarks = results.multi_face_landmarks[0].landmark
             openness = get_avg_eye_openness(landmarks)
-            
+
             current_time = time.time()
-            
+
             if openness < blink_threshold:
                 if not eye_closed:
                     blink_start_time = current_time
@@ -62,15 +68,17 @@ def gen_frames():
                         last_blink_time = current_time
                     blink_start_time = None
                     eye_closed = False
-        
+
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
+
 @app.route('/video_feed')
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 @app.route('/blink')
 def check_blink():
@@ -79,30 +87,34 @@ def check_blink():
     blink_detected_flag = False
     return jsonify({'blink': blink})
 
+
 def generate_word_suggestions():
     words = make_promt()
     return words
 
+
 @app.route('/submit', methods=['POST'])
 def submit_message():
     message = request.form.get('message', '')
-    
+
     if message:
         input_data.user_sentence = message
         return redirect(url_for('word_selection'))
     else:
         return redirect(url_for('index'))
-    
+
+
 @app.route('/word_selection')
 def word_selection():
     words = generate_word_suggestions()
     return render_template('word_selection.html', message=input_data.user_sentence, words=words)
 
+
 @app.route('/select_word', methods=['POST'])
 def select_word():
     user_sentence = input_data.user_sentence
     word = request.form.get('word', '')
-    
+
     if word:
         if user_sentence:
             user_sentence += " " + word
@@ -110,8 +122,9 @@ def select_word():
             user_sentence = word
         input_data.last_word = word
         input_data.user_sentence = user_sentence
-    
+
     return jsonify({'success': True})
+
 
 if __name__ == '__main__':
     app.run(debug=True)

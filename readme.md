@@ -1,1 +1,1 @@
-Set the API-Key as an environment variable with: export OPENAI_API_KEY="your_api_key_here"
+Set the API-Key as an environment variable with: export OPENAI_API_KEY="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"
