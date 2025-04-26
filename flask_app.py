@@ -116,12 +116,17 @@ def select_word():
     user_sentence = input_data.user_sentence
     word_index = int(request.form.get('word', ''))
 
-    if word_index == 12:
-        # Tell frontend to go to index
+    if word_index == 12: # Keyboard button
         input_data.user_sentence = user_sentence + " "
         return jsonify({'redirect': url_for('index')})
-
-    if 0 <= word_index < len(words):
+    elif word_index == 13: # Reset button
+        input_data.user_sentence = " "
+        return jsonify({'redirect': url_for('index')})
+    elif word_index == 14: # Subbmit button
+        pass
+    elif word_index == 15: # SOS button
+        pass
+    elif 0 <= word_index < len(words): # ordinary words
         word = words[word_index]
         if word:
             if user_sentence:
